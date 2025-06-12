@@ -1,11 +1,8 @@
 package com.pluralsight.data;
 
 import com.pluralsight.models.Category;
-import com.pluralsight.models.Product;
-import com.pluralsight.models.Supplier;
 import org.apache.commons.dbcp2.BasicDataSource;
 
-import java.net.NoRouteToHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,10 +10,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NorthwindDataManager {
+public class CategoriesDao {
     private BasicDataSource dataSource;
 
-    public NorthwindDataManager(BasicDataSource dataSource){
+    public CategoriesDao(BasicDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -52,32 +49,37 @@ public class NorthwindDataManager {
     }
 
     public Category getCategoryByName(String categoryName){
+
+        String query = """
+                 SELECT
+                CategoryID,
+                CategoryName
+                FROM
+                categories
+                WHERE CategoryName = ?
+                """;
+        try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement s = c.prepareStatement(query);
+        ) {
+            s.setString(1, categoryName);
+
+            try (ResultSet queryResults = s.executeQuery()) {
+                if (queryResults.next()) {
+
+                    int categoryId = queryResults.getInt(1);
+                    return new Category(categoryId, categoryName);
+
+                }
+            }
+        }
+
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+
         return null;
     }
-
-    public List<Product> getProducts(){
-        return  null;
-    }
-
-    public List<Product> getProductsByCategory(Category category){
-        return null;
-    }
-
-    public List<Product> getProductsByPrice(double minPrice, double maxPrice){
-        return null;
-    }
-
-    public List<Product> getProductsBySupplier(Supplier supplier){
-        return null;
-    }
-
-    public List<Supplier> getSuppliers(){
-        return null;
-    }
-
-
-
-
 
 
 }
